@@ -43,7 +43,7 @@ func (service *transferService) CreateTransfer(token string, transfer entities.T
 	}
 
 	if accountOriginID != transfer.AccountOriginID {
-		return errors.New("Conta de Origem inválida")
+		return errors.New("conta de origem inválida")
 	}
 
 	accountOrigin, err := service.accountRepository.GetAccountByID(accountOriginID)
@@ -57,7 +57,7 @@ func (service *transferService) CreateTransfer(token string, transfer entities.T
 	}
 
 	if accountOrigin.Balance < transfer.Amount {
-		return errors.New("O balanço da Conta de Origem é insuficiente")
+		return errors.New("o balanço da conta de origem é insuficiente")
 	}
 
 	accountOrigin.Balance -= transfer.Amount

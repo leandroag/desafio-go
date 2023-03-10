@@ -14,6 +14,12 @@ type cryptService interface {
 	HashSecret(secret string) (string, error)
 }
 
+type AccountService interface {
+	CreateAccount(account entities.Account) error
+	GetAccountBalance(accountID string) (float64, error)
+	GetAccounts() ([]entities.Account, error)
+}
+
 type accountService struct {
 	accountRepository accountRepository
 	cryptService      cryptService
