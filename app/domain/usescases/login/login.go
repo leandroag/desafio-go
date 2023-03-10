@@ -13,6 +13,10 @@ type cryptService interface {
 	GenerateToken(accountID string) (string, error)
 }
 
+type LoginService interface {
+	Authenticate(cpf string, secret string) (string, error)
+}
+
 type loginService struct {
 	accountRepository accountRepository
 	cryptService      cryptService

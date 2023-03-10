@@ -21,6 +21,11 @@ type cryptService interface {
 	GetAccountByToken(token string) (string, error)
 }
 
+type TransferService interface {
+	CreateTransfer(token string, transfer entities.Transfer) error
+	GetTransfersByAccountID(accountID string) ([]entities.Transfer, error)
+}
+
 type transferService struct {
 	accountRepository  accountRepository
 	transferRepository transferRepository
@@ -36,7 +41,7 @@ func NewTransferService(accountRepository accountRepository, transferRepository 
 }
 
 func (service *transferService) CreateTransfer(token string, transfer entities.Transfer) error {
-	// Implementar a função de buscar informações da conta a partir do token do usuário autenticado atualmente
+	// Busca informações da conta a partir do token do usuário autenticado atualmente
 	accountOriginID, err := service.cryptService.GetAccountByToken(token)
 	if err != nil {
 		return err
