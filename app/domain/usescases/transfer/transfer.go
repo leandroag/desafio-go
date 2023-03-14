@@ -40,7 +40,7 @@ func NewTransferService(accountRepository accountRepository, transferRepository 
 	}
 }
 
-func (service *transferService) CreateTransfer(token string, transfer entities.Transfer) error {
+func (service transferService) CreateTransfer(token string, transfer entities.Transfer) error {
 	// Busca informações da conta a partir do token do usuário autenticado atualmente
 	accountOriginID, err := service.cryptService.GetAccountByToken(token)
 	if err != nil {
@@ -81,6 +81,6 @@ func (service *transferService) CreateTransfer(token string, transfer entities.T
 	return service.transferRepository.CreateTransfer(transfer)
 }
 
-func (service *transferService) GetTransfersByAccountID(accountID string) ([]entities.Transfer, error) {
+func (service transferService) GetTransfersByAccountID(accountID string) ([]entities.Transfer, error) {
 	return service.transferRepository.GetTransfersByAccountID(accountID)
 }

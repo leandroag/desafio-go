@@ -34,13 +34,13 @@ func NewTransferHandler(transferUseCase transfer.TransferService, cryptService c
 	}
 }
 
-func (handler *TransferHandler) RegisterRoutes(router *mux.Router) {
+func (handler TransferHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/transfers ", handler.getTransfers).Methods(http.MethodGet)
 	router.HandleFunc("/transfers ", handler.createTransfer).Methods(http.MethodPost)
 }
 
 // Handler para a rota GET /transfers
-func (handler *TransferHandler) getTransfers(w http.ResponseWriter, r *http.Request) {
+func (handler TransferHandler) getTransfers(w http.ResponseWriter, r *http.Request) {
 	// Recupera o valor do cabeçalho "Authorization" da requisição
 	authHeader := r.Header.Get("Authorization")
 
@@ -67,7 +67,7 @@ func (handler *TransferHandler) getTransfers(w http.ResponseWriter, r *http.Requ
 }
 
 // Handler para a rota POST /transfers
-func (handler *TransferHandler) createTransfer(w http.ResponseWriter, r *http.Request) {
+func (handler TransferHandler) createTransfer(w http.ResponseWriter, r *http.Request) {
 	var transfer entities.Transfer
 
 	err := json.NewDecoder(r.Body).Decode(&transfer)

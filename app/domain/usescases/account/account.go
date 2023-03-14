@@ -32,15 +32,15 @@ func NewAccountService(accountRepository accountRepository, cryptService cryptSe
 	}
 }
 
-func (service *accountService) GetAccounts() ([]entities.Account, error) {
+func (service accountService) GetAccounts() ([]entities.Account, error) {
 	return service.accountRepository.GetAllAccounts()
 }
 
-func (service *accountService) GetAccountBalance(accountID string) (float64, error) {
+func (service accountService) GetAccountBalance(accountID string) (float64, error) {
 	return service.accountRepository.GetAccountBalance(accountID)
 }
 
-func (service *accountService) CreateAccount(account entities.Account) error {
+func (service accountService) CreateAccount(account entities.Account) error {
 	passwordHash, err := service.cryptService.HashSecret(account.Secret)
 	if err != nil {
 		return err
