@@ -1,23 +1,19 @@
 package account
 
 import (
+	"context"
+
 	"github.com/leandroag/desafio/app/domain/entities"
 )
 
 type accountRepository interface {
-	CreateAccount(account entities.Account) error
-	GetAccountBalance(accountID string) (float64, error)
-	GetAllAccounts() ([]entities.Account, error)
+	CreateAccount(ctx context.Context, account entities.Account) error
+	GetAccountBalance(ctx context.Context, accountID string) (float64, error)
+	GetAllAccounts(ctx context.Context) ([]entities.Account, error)
 }
 
 type cryptService interface {
 	HashSecret(secret string) (string, error)
-}
-
-type AccountService interface {
-	CreateAccount(account entities.Account) error
-	GetAccountBalance(accountID string) (float64, error)
-	GetAccounts() ([]entities.Account, error)
 }
 
 type accountService struct {
@@ -32,21 +28,21 @@ func NewAccountService(accountRepository accountRepository, cryptService cryptSe
 	}
 }
 
-func (service accountService) GetAccounts() ([]entities.Account, error) {
-	return service.accountRepository.GetAllAccounts()
+func (s accountService) GetAccounts(ctx context.Context) ([]entities.Account, error) {
+	return s.accountRepository.GetAllAccounts(ctx)
 }
 
-func (service accountService) GetAccountBalance(accountID string) (float64, error) {
-	return service.accountRepository.GetAccountBalance(accountID)
+func (s accountService) GetAccountBalance(ctx context.Context, accountID string) (float64, error) {
+	return s.accountRepository.GetAccountBalance(ctx, accountID)
 }
 
-func (service accountService) CreateAccount(account entities.Account) error {
-	passwordHash, err := service.cryptService.HashSecret(account.Secret)
+func (s accountService) CreateAccount(ctx context.Context, account entities.Account) error {
+	passwordHash, err := s.cryptService.HashSecret(account.Secret)
 	if err != nil {
 		return err
 	}
 
 	account.Secret = passwordHash
 
-	return service.accountRepository.CreateAccount(account)
+	return s.accountRepository.CreateAccount(ctx, account)
 }
