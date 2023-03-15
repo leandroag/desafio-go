@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/leandroag/desafio/app/gateway/db/postgres/migrations"
 )
 
 func New(addr string, minConn, maxConn int32) (*pgxpool.Pool, error) {
@@ -30,4 +33,11 @@ func New(addr string, minConn, maxConn int32) (*pgxpool.Pool, error) {
 	}
 
 	return pgxConn, nil
+}
+
+type Querier interface {
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
 }
