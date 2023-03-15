@@ -29,7 +29,7 @@ func NewLoginService(accountRepository accountRepository, cryptService cryptServ
 	}
 }
 
-func (service *loginService) Authenticate(cpf string, secret string) (string, error) {
+func (service loginService) Authenticate(cpf string, secret string) (string, error) {
 	account, err := service.accountRepository.GetAccountByCPF(cpf)
 	if err != nil {
 		return "", err

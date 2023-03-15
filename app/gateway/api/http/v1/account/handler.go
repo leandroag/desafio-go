@@ -20,13 +20,13 @@ func NewAccountHandler(accountUseCase account.AccountService) *AccountHandler {
 	}
 }
 
-func (handler *AccountHandler) RegisterRoutes(router *mux.Router) {
+func (handler AccountHandler) RegisterRoutes(router mux.Router) {
 	router.HandleFunc("/accounts", handler.createAccount).Methods(http.MethodPost)
 	router.HandleFunc("/accounts", handler.listAccounts).Methods(http.MethodGet)
 	router.HandleFunc("/accounts/{account_id}/balance", handler.getAccountBalance).Methods(http.MethodGet)
 }
 
-func (handler *AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
+func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
 	var account entities.Account
 
 	err := json.NewDecoder(r.Body).Decode(&account)
