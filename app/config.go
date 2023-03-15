@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -11,16 +12,24 @@ import (
 
 type Config struct {
 	Postgres PostgresConfig
+	Http     HttpConfig
+	JwtKey   string `env:"JWT_ACCESS_KEY" default:"stone"`
+}
+
+type HttpConfig struct {
+	Address      string        `env:"HTTP_ADDRESS" default:"0.0.0.0:8080"`
+	ReadTimeout  time.Duration `env:"SERVER_READ_TIMEOUT" default:"30s"`
+	WriteTimeout time.Duration `env:"SERVER_WRITE_TIMEOUT" default:"30s"`
 }
 
 type PostgresConfig struct {
 	Host        string `env:"DB_HOST" default:"localhost"`
 	Port        string `env:"DB_PORT" default:"5432"`
-	Database    string `env:"DB_DATABASE" default:"postgres"`
+	Database    string `env:"DB_NAME" default:"postgres"`
 	User        string `env:"DB_USER" default:"postgres"`
 	Password    string `env:"DB_PASS" default:"postgres"`
-	PoolMinSize string `env:"DB_POOL_MIN_SIZE" default:"2"`
-	PoolMaxSize string `env:"DB_POOL_MAX_SIZE" default:"10"`
+	PoolMinSize int32  `env:"DB_POOL_MIN_SIZE" default:"2"`
+	PoolMaxSize int32  `env:"DB_POOL_MAX_SIZE" default:"10"`
 	SSLMode     string `env:"DB_SSL_MODE" default:"disable"`
 }
 
