@@ -1,20 +1,18 @@
 package login
 
 import (
+	"context"
+
 	"github.com/leandroag/desafio/app/domain/entities"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type accountRepository interface {
-	GetAccountByCPF(cpf string) (entities.Account, error)
+	GetAccountByCPF(ctx context.Context, cpf string) (entities.Account, error)
 }
 
 type cryptService interface {
 	GenerateToken(accountID string) (string, error)
-}
-
-type LoginService interface {
-	Authenticate(cpf string, secret string) (string, error)
 }
 
 type loginService struct {
@@ -29,8 +27,8 @@ func NewLoginService(accountRepository accountRepository, cryptService cryptServ
 	}
 }
 
-func (service loginService) Authenticate(cpf string, secret string) (string, error) {
-	account, err := service.accountRepository.GetAccountByCPF(cpf)
+func (service loginService) Authenticate(ctx context.Context, cpf string, secret string) (string, error) {
+	account, err := service.accountRepository.GetAccountByCPF(ctx, cpf)
 	if err != nil {
 		return "", err
 	}
