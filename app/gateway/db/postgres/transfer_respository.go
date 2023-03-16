@@ -1,54 +1,55 @@
 package postgres
 
 import (
-	"database/sql"
-	"time"
+	"context"
 
 	"github.com/leandroag/desafio/app/domain/entities"
 )
 
 type transferRepository struct {
-	db *sql.DB
+	Querier
 }
 
-func NewTransferRepository(db *sql.DB) *transferRepository {
+func NewTransferRepository(querier Querier) *transferRepository {
 	return &transferRepository{
-		db: db,
+		querier,
 	}
 }
 
-func (repository transferRepository) CreateTransfer(accountOriginID string, accountDestinationID string, amount float64) (entities.Transfer, error) {
-	tx, err := repository.db.Begin()
+func (r transferRepository) CreateTransfer(ctx context.Context, transfer entities.Transfer) error {
+	const query = "INSERT INTO transfers(account_origin_id, account_destination_id, amount) VALUES($1, $2, $3) RETURNING id"
+
+	err := r.QueryRow(ctx, query, transfer.AccountOriginID, transfer.AccountDestinationID, transfer.Amount).Scan(&transfer.ID)
 	if err != nil {
-		return entities.Transfer{}, err
+		return err
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r transferRepository) GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error) {
+	const query = "SELECT id, account_origin_id, account_destination_id, amount, created_at FROM accounts WHERE account_origin_id = $1"
+	rows, err := r.Query(ctx, query, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transfers := []entities.Transfer{}
+	for rows.Next() {
+		transfer := entities.Transfer{}
+		err = rows.Scan(&transfer.ID, &transfer.AccountOriginID, &transfer.AccountDestinationID, &transfer.Amount, &transfer.CreatedAt)
+		if err != nil {
+			return nil, err
 		}
-	}()
-
-	// Faz a transferência
-	var transferID string
-	err = tx.QueryRow("INSERT INTO transfers(account_origin_id, account_destination_id, amount) VALUES($1, $2, $3) RETURNING id", accountOriginID, accountDestinationID, amount).Scan(&transferID)
-	if err != nil {
-		tx.Rollback()
-		return entities.Transfer{}, err
+		transfers = append(transfers, transfer)
 	}
-
-	transfer := entities.Transfer{
-		ID:                   transferID,
-		AccountOriginID:      accountOriginID,
-		AccountDestinationID: accountDestinationID,
-		Amount:               amount,
-		CreatedAt:            time.Now(),
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
-
-	err = tx.Commit()
-	if err != nil {
-		return entities.Transfer{}, err
-	}
-
-	return transfer, nil
+	return transfers, nil
 }

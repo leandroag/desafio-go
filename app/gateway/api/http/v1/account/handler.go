@@ -1,26 +1,32 @@
 package account
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 
 	"github.com/leandroag/desafio/app/domain/entities"
-	"github.com/leandroag/desafio/app/domain/usescases/account"
 )
 
-type AccountHandler struct {
-	accountUseCase account.AccountService
+type accountService interface {
+	CreateAccount(ctx context.Context, account entities.Account) error
+	GetAccountBalance(ctx context.Context, accountID string) (float64, error)
+	GetAccounts(ctx context.Context) ([]entities.Account, error)
 }
 
-func NewAccountHandler(accountUseCase account.AccountService) *AccountHandler {
+type AccountHandler struct {
+	accountUseCase accountService
+}
+
+func NewAccountHandler(accountUseCase accountService) *AccountHandler {
 	return &AccountHandler{
 		accountUseCase,
 	}
 }
 
-func (handler AccountHandler) RegisterRoutes(router mux.Router) {
+func (handler AccountHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/accounts", handler.createAccount).Methods(http.MethodPost)
 	router.HandleFunc("/accounts", handler.listAccounts).Methods(http.MethodGet)
 	router.HandleFunc("/accounts/{account_id}/balance", handler.getAccountBalance).Methods(http.MethodGet)
@@ -35,7 +41,7 @@ func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = handler.accountUseCase.CreateAccount(account)
+	err = handler.accountUseCase.CreateAccount(r.Context(), account)
 	if err != nil {
 		http.Error(w, "Error creating account", http.StatusInternalServerError)
 		return
@@ -45,7 +51,7 @@ func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Reque
 }
 
 func (handler *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Request) {
-	accounts, err := handler.accountUseCase.GetAccounts()
+	accounts, err := handler.accountUseCase.GetAccounts(r.Context())
 	if err != nil {
 		http.Error(w, "Error getting accounts", http.StatusInternalServerError)
 		return
@@ -58,7 +64,7 @@ func (handler *AccountHandler) getAccountBalance(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	accountID := vars["account_id"]
 
-	balance, err := handler.accountUseCase.GetAccountBalance(accountID)
+	balance, err := handler.accountUseCase.GetAccountBalance(r.Context(), accountID)
 	if err != nil {
 		http.Error(w, "Error getting account balance", http.StatusInternalServerError)
 		return

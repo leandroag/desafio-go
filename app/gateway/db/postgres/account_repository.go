@@ -1,40 +1,61 @@
 package postgres
 
 import (
-	"database/sql"
+	"context"
+	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/leandroag/desafio/app/domain/entities"
 )
 
 type accountRepository struct {
-	db *sql.DB
+	Querier
 }
 
-func NewAccountRepository(db *sql.DB) *accountRepository {
+func NewAccountRepository(querier Querier) *accountRepository {
 	return &accountRepository{
-		db: db,
+		querier,
 	}
 }
 
-func (repository accountRepository) GetAccountByID(accountID int64) (*entities.Account, error) {
-	account := &entities.Account{}
-	err := repository.db.QueryRow("SELECT id, name, cpf, secret, balance, created_at FROM accounts WHERE id = $1", accountID).
+func (r accountRepository) GetAccountByID(ctx context.Context, accountID string) (entities.Account, error) {
+	const query = "SELECT id, name, cpf, secret, balance, created_at FROM accounts WHERE id = $1"
+
+	account := entities.Account{}
+	err := r.QueryRow(ctx, query, accountID).
 		Scan(&account.ID, &account.Name, &account.CPF, &account.Secret, &account.Balance, &account.CreatedAt)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Account{}, nil
 		}
-		return nil, err
+		return entities.Account{}, err
 	}
 	return account, nil
 }
 
-func (repository accountRepository) GetAccountBalance(accountID int64) (float64, error) {
-	var balance float64
-	err := repository.db.QueryRow("SELECT balance FROM accounts WHERE id = $1", accountID).Scan(&balance)
+func (r accountRepository) GetAccountByCPF(ctx context.Context, CPF string) (entities.Account, error) {
+	const query = "SELECT id, name, cpf, secret, balance, created_at FROM accounts WHERE cpf = $1"
+
+	account := entities.Account{}
+	err := r.QueryRow(ctx, query, CPF).
+		Scan(&account.ID, &account.Name, &account.CPF, &account.Secret, &account.Balance, &account.CreatedAt)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Account{}, nil
+		}
+		return entities.Account{}, err
+	}
+	return account, nil
+}
+
+func (r accountRepository) GetAccountBalance(ctx context.Context, accountID string) (float64, error) {
+	const query = "SELECT balance FROM accounts WHERE id = $1"
+
+	var balance float64
+	err := r.QueryRow(ctx, query, accountID).Scan(&balance)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, nil
 		}
 		return 0, err
@@ -42,16 +63,17 @@ func (repository accountRepository) GetAccountBalance(accountID int64) (float64,
 	return balance, nil
 }
 
-func (repository accountRepository) GetAllAccounts() ([]*entities.Account, error) {
-	rows, err := repository.db.Query("SELECT id, name, cpf, secret, balance, created_at FROM accounts")
+func (r accountRepository) GetAllAccounts(ctx context.Context) ([]entities.Account, error) {
+	const query = "SELECT id, name, cpf, secret, balance, created_at FROM accounts"
+	rows, err := r.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	accounts := []*entities.Account{}
+	accounts := []entities.Account{}
 	for rows.Next() {
-		account := &entities.Account{}
+		account := entities.Account{}
 		err = rows.Scan(&account.ID, &account.Name, &account.CPF, &account.Secret, &account.Balance, &account.CreatedAt)
 		if err != nil {
 			return nil, err
@@ -64,11 +86,20 @@ func (repository accountRepository) GetAllAccounts() ([]*entities.Account, error
 	return accounts, nil
 }
 
-func (repo accountRepository) CreateAccount(account entities.Account) error {
+func (r accountRepository) CreateAccount(ctx context.Context, account entities.Account) error {
+	const query = "INSERT INTO accounts (name, cpf, secret, balance, created_at) VALUES ($1, $2, $3, $4, $5)"
 	account.CreatedAt = time.Now()
 
-	_, err := repo.db.Exec("INSERT INTO accounts (name, cpf, secret, balance, created_at) VALUES ($1, $2, $3, $4, $5)",
-		account.Name, account.CPF, account.Secret, account.Balance, account.CreatedAt)
+	_, err := r.Exec(ctx, query, account.Name, account.CPF, account.Secret, account.Balance, account.CreatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r accountRepository) UpdateAccount(ctx context.Context, account entities.Account) error {
+	const query = `UPDATE accounts SET balance=$2, WHERE id=$1`
+	_, err := r.Exec(ctx, query, account.ID, account.Balance)
 	if err != nil {
 		return err
 	}
