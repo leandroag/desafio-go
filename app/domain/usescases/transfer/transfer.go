@@ -1,29 +1,25 @@
 package transfer
 
 import (
+	"context"
 	"errors"
 
 	"github.com/leandroag/desafio/app/domain/entities"
 )
 
 type transferRepository interface {
-	CreateTransfer(transfer entities.Transfer) error
-	GetTransfersByAccountID(accountID string) ([]entities.Transfer, error)
+	CreateTransfer(ctx context.Context, transfer entities.Transfer) error
+	GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error)
 }
 
 type accountRepository interface {
-	GetAccountByID(accountID string) (entities.Account, error)
-	GetAccountByCPF(CPF string) (entities.Account, error)
-	UpdateAccount(account entities.Account) error
+	GetAccountByID(ctx context.Context, accountID string) (entities.Account, error)
+	GetAccountByCPF(ctx context.Context, CPF string) (entities.Account, error)
+	UpdateAccount(ctx context.Context, account entities.Account) error
 }
 
 type cryptService interface {
 	GetAccountByToken(token string) (string, error)
-}
-
-type TransferService interface {
-	CreateTransfer(token string, transfer entities.Transfer) error
-	GetTransfersByAccountID(accountID string) ([]entities.Transfer, error)
 }
 
 type transferService struct {
@@ -40,7 +36,7 @@ func NewTransferService(accountRepository accountRepository, transferRepository 
 	}
 }
 
-func (service transferService) CreateTransfer(token string, transfer entities.Transfer) error {
+func (service transferService) CreateTransfer(ctx context.Context, token string, transfer entities.Transfer) error {
 	// Busca informações da conta a partir do token do usuário autenticado atualmente
 	accountOriginID, err := service.cryptService.GetAccountByToken(token)
 	if err != nil {
@@ -51,12 +47,12 @@ func (service transferService) CreateTransfer(token string, transfer entities.Tr
 		return errors.New("conta de origem inválida")
 	}
 
-	accountOrigin, err := service.accountRepository.GetAccountByID(accountOriginID)
+	accountOrigin, err := service.accountRepository.GetAccountByID(ctx, accountOriginID)
 	if err != nil {
 		return err
 	}
 
-	accountDestination, err := service.accountRepository.GetAccountByID(transfer.AccountDestinationID)
+	accountDestination, err := service.accountRepository.GetAccountByID(ctx, transfer.AccountDestinationID)
 	if err != nil {
 		return err
 	}
@@ -69,18 +65,18 @@ func (service transferService) CreateTransfer(token string, transfer entities.Tr
 	accountDestination.Balance += transfer.Amount
 
 	// Atualiza o balanço da conta de origem
-	if err := service.accountRepository.UpdateAccount(accountOrigin); err != nil {
+	if err := service.accountRepository.UpdateAccount(ctx, accountOrigin); err != nil {
 		return err
 	}
 
 	// Atualiza o balanço da conta de destino
-	if err := service.accountRepository.UpdateAccount(accountDestination); err != nil {
+	if err := service.accountRepository.UpdateAccount(ctx, accountDestination); err != nil {
 		return err
 	}
 
-	return service.transferRepository.CreateTransfer(transfer)
+	return service.transferRepository.CreateTransfer(ctx, transfer)
 }
 
-func (service transferService) GetTransfersByAccountID(accountID string) ([]entities.Transfer, error) {
-	return service.transferRepository.GetTransfersByAccountID(accountID)
+func (service transferService) GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error) {
+	return service.transferRepository.GetTransfersByAccountID(ctx, accountID)
 }

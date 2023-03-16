@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"time"
 
 	"github.com/leandroag/desafio/app/domain/entities"
 )
@@ -17,26 +16,40 @@ func NewTransferRepository(querier Querier) *transferRepository {
 	}
 }
 
-func (r transferRepository) CreateTransfer(ctx context.Context, accountOriginID string, accountDestinationID string, amount float64) (entities.Transfer, error) {
+func (r transferRepository) CreateTransfer(ctx context.Context, transfer entities.Transfer) error {
 	const query = "INSERT INTO transfers(account_origin_id, account_destination_id, amount) VALUES($1, $2, $3) RETURNING id"
-	// Faz a transferência
-	var transferID string
-	err := r.QueryRow(ctx, query, accountOriginID, accountDestinationID, amount).Scan(&transferID)
-	if err != nil {
-		return entities.Transfer{}, err
-	}
 
-	transfer := entities.Transfer{
-		ID:                   transferID,
-		AccountOriginID:      accountOriginID,
-		AccountDestinationID: accountDestinationID,
-		Amount:               amount,
-		CreatedAt:            time.Now(),
+	err := r.QueryRow(ctx, query, transfer.AccountOriginID, transfer.AccountDestinationID, transfer.Amount).Scan(&transfer.ID)
+	if err != nil {
+		return err
 	}
 
 	if err != nil {
-		return entities.Transfer{}, err
+		return err
 	}
 
-	return transfer, nil
+	return nil
+}
+
+func (r transferRepository) GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error) {
+	const query = "SELECT id, account_origin_id, account_destination_id, amount, created_at FROM accounts WHERE account_origin_id = $1"
+	rows, err := r.Query(ctx, query, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transfers := []entities.Transfer{}
+	for rows.Next() {
+		transfer := entities.Transfer{}
+		err = rows.Scan(&transfer.ID, &transfer.AccountOriginID, &transfer.AccountDestinationID, &transfer.Amount, &transfer.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		transfers = append(transfers, transfer)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return transfers, nil
 }

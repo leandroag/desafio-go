@@ -1,6 +1,7 @@
 package transfer
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -8,33 +9,30 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/leandroag/desafio/app/domain/entities"
-	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 )
 
-type TransferDTO struct {
-	AccountOriginID      uint64 `json:"account_origin_id"`
-	AccountDestinationID uint64 `json:"account_destination_id"`
-	Amount               uint64 `json:"amount"`
+type transferService interface {
+	CreateTransfer(ctx context.Context, token string, transfer entities.Transfer) error
+	GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error)
 }
 
 type cryptService interface {
 	GetAccountByToken(token string) (string, error)
-	GetToken(accountID string) string 
 }
 
 type TransferHandler struct {
-	transferUseCase transfer.TransferService
+	transferUseCase transferService
 	cryptService    cryptService
 }
 
-func NewTransferHandler(transferUseCase transfer.TransferService, cryptService cryptService) *TransferHandler {
+func NewTransferHandler(transferUseCase transferService, cryptService cryptService) *TransferHandler {
 	return &TransferHandler{
 		transferUseCase,
 		cryptService,
 	}
 }
 
-func (handler TransferHandler) RegisterRoutes(router *mux.Router) {
+func (handler TransferHandler) RegisterRoutes(router mux.Router) {
 	router.HandleFunc("/transfers ", handler.getTransfers).Methods(http.MethodGet)
 	router.HandleFunc("/transfers ", handler.createTransfer).Methods(http.MethodPost)
 }
@@ -55,7 +53,7 @@ func (handler TransferHandler) getTransfers(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Recupera a lista de transferências da conta de origem
-	transferList, err := handler.transferUseCase.GetTransfersByAccountID(accountOriginID)
+	transferList, err := handler.transferUseCase.GetTransfersByAccountID(r.Context(), accountOriginID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -83,7 +81,7 @@ func (handler TransferHandler) createTransfer(w http.ResponseWriter, r *http.Req
 	token := strings.Split(authHeader, "Bearer ")[1]
 
 	// Realiza a transferência
-	err = handler.transferUseCase.CreateTransfer(token, transfer)
+	err = handler.transferUseCase.CreateTransfer(r.Context(), token, transfer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
