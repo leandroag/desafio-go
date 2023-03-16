@@ -18,10 +18,15 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/leandroag/desafio/app/domain/usescases/account"
+	"github.com/leandroag/desafio/app/domain/usescases/transfer"
+	"github.com/leandroag/desafio/app/domain/usescases/login"
+
 	handlerAccount "github.com/leandroag/desafio/app/gateway/api/http/v1/account"
+	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
+	handlerLogin "github.com/leandroag/desafio/app/gateway/api/http/v1/login"
+
 	"github.com/leandroag/desafio/app/gateway/bcrypt"
 	"github.com/leandroag/desafio/app/gateway/db/postgres"
-	// "github.com/leandroag/desafio/app/gateway/api/account"
 )
 
 func main() {
@@ -35,21 +40,30 @@ func main() {
 	}
 	defer conn.Close()
 
-	accountRepository := postgres.NewAccountRepository(conn)
-
+	// inicializando crypt service
 	bcryptService := bcrypt.NewCryptService([]byte(cfg.JwtKey))
 
-	// inicializa o caso de uso de contas
-	accountUseCase := account.NewAccountService(accountRepository, bcryptService)
+	// inicializa repositórios
+	accountRepository := postgres.NewAccountRepository(conn)
+	transferRepository := postgres.NewTransferRepository(conn)
 
-	// inicializa o handler de contas
+	// inicializando casos de uso
+	accountUseCase := account.NewAccountService(accountRepository, bcryptService)
+	transferUseCase := transfer.NewTransferService(accountRepository, transferRepository, bcryptService)
+	loginUseCase := login.NewLoginService(accountRepository, bcryptService)
+
+	// inicializando os handlers
 	accountHandler := handlerAccount.NewAccountHandler(accountUseCase)
+	transferHandler := handlerTransfer.NewTransferHandler(transferUseCase, bcryptService)
+	loginHandler := handlerLogin.NewLoginHandler(loginUseCase)
 
 	// cria o roteador
 	router := mux.NewRouter()
 
 	// registra as rotas do handler de contas
 	accountHandler.RegisterRoutes(*router)
+	transferHandler.RegisterRoutes(*router)
+	loginHandler.RegisterRoutes(*router)
 
 	// Server
 	fmt.Printf(cfg.Http.Address)
