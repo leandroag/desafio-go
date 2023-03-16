@@ -26,7 +26,7 @@ func NewAccountHandler(accountUseCase accountService) *AccountHandler {
 	}
 }
 
-func (handler AccountHandler) RegisterRoutes(router mux.Router) {
+func (handler AccountHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/accounts", handler.createAccount).Methods(http.MethodPost)
 	router.HandleFunc("/accounts", handler.listAccounts).Methods(http.MethodGet)
 	router.HandleFunc("/accounts/{account_id}/balance", handler.getAccountBalance).Methods(http.MethodGet)

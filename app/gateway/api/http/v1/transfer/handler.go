@@ -32,7 +32,7 @@ func NewTransferHandler(transferUseCase transferService, cryptService cryptServi
 	}
 }
 
-func (handler TransferHandler) RegisterRoutes(router mux.Router) {
+func (handler TransferHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/transfers ", handler.getTransfers).Methods(http.MethodGet)
 	router.HandleFunc("/transfers ", handler.createTransfer).Methods(http.MethodPost)
 }

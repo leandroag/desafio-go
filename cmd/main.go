@@ -61,9 +61,9 @@ func main() {
 	router := mux.NewRouter()
 
 	// registra as rotas do handler de contas
-	accountHandler.RegisterRoutes(*router)
-	transferHandler.RegisterRoutes(*router)
-	loginHandler.RegisterRoutes(*router)
+	accountHandler.RegisterRoutes(router)
+	transferHandler.RegisterRoutes(router)
+	loginHandler.RegisterRoutes(router)
 
 	// Server
 	fmt.Printf(cfg.Http.Address)

@@ -24,7 +24,7 @@ func NewLoginHandler(loginUseCase loginService) *LoginHandler {
 	}
 }
 
-func (handler *LoginHandler) RegisterRoutes(router mux.Router) {
+func (handler *LoginHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login", handler.login).Methods(http.MethodPost)
 }
 
