@@ -18,12 +18,12 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/leandroag/desafio/app/domain/usescases/account"
-	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 	"github.com/leandroag/desafio/app/domain/usescases/login"
+	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 
 	handlerAccount "github.com/leandroag/desafio/app/gateway/api/http/v1/account"
-	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
 	handlerLogin "github.com/leandroag/desafio/app/gateway/api/http/v1/login"
+	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
 
 	"github.com/leandroag/desafio/app/gateway/bcrypt"
 	"github.com/leandroag/desafio/app/gateway/db/postgres"

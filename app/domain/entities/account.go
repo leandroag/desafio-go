@@ -4,7 +4,7 @@ import "time"
 
 // Account representa uma conta bancária
 type Account struct {
-	ID        string    `json:"id"`
+	ID        int32     `json:"id"`
 	Name      string    `json:"name"`
 	CPF       string    `json:"cpf"`
 	Secret    string    `json:"-"`

@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/leandroag/desafio/app/domain/entities"
+	"github.com/leandroag/desafio/app/dtos"
 )
 
 type accountRepository interface {
 	CreateAccount(ctx context.Context, account entities.Account) error
-	GetAccountBalance(ctx context.Context, accountID string) (float64, error)
+	GetAccountBalance(ctx context.Context, accountID int32) (float64, error)
 	GetAllAccounts(ctx context.Context) ([]entities.Account, error)
 }
 
@@ -32,11 +33,11 @@ func (s accountService) GetAccounts(ctx context.Context) ([]entities.Account, er
 	return s.accountRepository.GetAllAccounts(ctx)
 }
 
-func (s accountService) GetAccountBalance(ctx context.Context, accountID string) (float64, error) {
+func (s accountService) GetAccountBalance(ctx context.Context, accountID int32) (float64, error) {
 	return s.accountRepository.GetAccountBalance(ctx, accountID)
 }
 
-func (s accountService) CreateAccount(ctx context.Context, account entities.Account) error {
+func (s accountService) CreateAccount(ctx context.Context, account dtos.AccountDTO) error {
 	passwordHash, err := s.cryptService.HashSecret(account.Secret)
 	if err != nil {
 		return err
@@ -44,5 +45,7 @@ func (s accountService) CreateAccount(ctx context.Context, account entities.Acco
 
 	account.Secret = passwordHash
 
-	return s.accountRepository.CreateAccount(ctx, account)
+	accountToSave := account.ToAccountDomain()
+
+	return s.accountRepository.CreateAccount(ctx, *accountToSave)
 }

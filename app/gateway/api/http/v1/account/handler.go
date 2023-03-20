@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 
 	"github.com/leandroag/desafio/app/domain/entities"
+	"github.com/leandroag/desafio/app/dtos"
 )
 
 type accountService interface {
-	CreateAccount(ctx context.Context, account entities.Account) error
-	GetAccountBalance(ctx context.Context, accountID string) (float64, error)
+	CreateAccount(ctx context.Context, account dtos.AccountDTO) error
+	GetAccountBalance(ctx context.Context, accountID int32) (float64, error)
 	GetAccounts(ctx context.Context) ([]entities.Account, error)
 }
 
@@ -33,7 +35,7 @@ func (handler AccountHandler) RegisterRoutes(router *mux.Router) {
 }
 
 func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
-	var account entities.Account
+	var account dtos.AccountDTO
 
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
@@ -62,9 +64,14 @@ func (handler *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Reque
 
 func (handler *AccountHandler) getAccountBalance(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	accountID := vars["account_id"]
 
-	balance, err := handler.accountUseCase.GetAccountBalance(r.Context(), accountID)
+	accountID, err := strconv.ParseInt(vars["account_id"], 10, 32)
+	if err != nil {
+		http.Error(w, "Invalid account ID", http.StatusBadRequest)
+		return
+	}
+
+	balance, err := handler.accountUseCase.GetAccountBalance(r.Context(), int32(accountID))
 	if err != nil {
 		http.Error(w, "Error getting account balance", http.StatusInternalServerError)
 		return

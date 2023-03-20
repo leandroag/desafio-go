@@ -5,21 +5,22 @@ import (
 	"errors"
 
 	"github.com/leandroag/desafio/app/domain/entities"
+	"github.com/leandroag/desafio/app/dtos"
 )
 
 type transferRepository interface {
 	CreateTransfer(ctx context.Context, transfer entities.Transfer) error
-	GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error)
+	GetTransfersByAccountID(ctx context.Context, accountID int32) ([]entities.Transfer, error)
 }
 
 type accountRepository interface {
-	GetAccountByID(ctx context.Context, accountID string) (entities.Account, error)
+	GetAccountByID(ctx context.Context, accountID int32) (entities.Account, error)
 	GetAccountByCPF(ctx context.Context, CPF string) (entities.Account, error)
 	UpdateAccount(ctx context.Context, account entities.Account) error
 }
 
 type cryptService interface {
-	GetAccountByToken(token string) (string, error)
+	GetAccountByToken(token string) (int32, error)
 }
 
 type transferService struct {
@@ -36,7 +37,7 @@ func NewTransferService(accountRepository accountRepository, transferRepository 
 	}
 }
 
-func (service transferService) CreateTransfer(ctx context.Context, token string, transfer entities.Transfer) error {
+func (service transferService) CreateTransfer(ctx context.Context, token string, transfer dtos.TransferDTO) error {
 	// Busca informações da conta a partir do token do usuário autenticado atualmente
 	accountOriginID, err := service.cryptService.GetAccountByToken(token)
 	if err != nil {
@@ -74,9 +75,11 @@ func (service transferService) CreateTransfer(ctx context.Context, token string,
 		return err
 	}
 
-	return service.transferRepository.CreateTransfer(ctx, transfer)
+	transferToSave := transfer.ToTransferDomain()
+
+	return service.transferRepository.CreateTransfer(ctx, *transferToSave)
 }
 
-func (service transferService) GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error) {
+func (service transferService) GetTransfersByAccountID(ctx context.Context, accountID int32) ([]entities.Transfer, error) {
 	return service.transferRepository.GetTransfersByAccountID(ctx, accountID)
 }

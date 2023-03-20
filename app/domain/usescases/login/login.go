@@ -12,7 +12,7 @@ type accountRepository interface {
 }
 
 type cryptService interface {
-	GenerateToken(accountID string) (string, error)
+	GenerateToken(accountID int32) (string, error)
 }
 
 type loginService struct {

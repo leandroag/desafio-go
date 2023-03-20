@@ -19,7 +19,7 @@ func NewAccountRepository(querier Querier) *accountRepository {
 	}
 }
 
-func (r accountRepository) GetAccountByID(ctx context.Context, accountID string) (entities.Account, error) {
+func (r accountRepository) GetAccountByID(ctx context.Context, accountID int32) (entities.Account, error) {
 	const query = "SELECT id, name, cpf, secret, balance, created_at FROM accounts WHERE id = $1"
 
 	account := entities.Account{}
@@ -49,7 +49,7 @@ func (r accountRepository) GetAccountByCPF(ctx context.Context, CPF string) (ent
 	return account, nil
 }
 
-func (r accountRepository) GetAccountBalance(ctx context.Context, accountID string) (float64, error) {
+func (r accountRepository) GetAccountBalance(ctx context.Context, accountID int32) (float64, error) {
 	const query = "SELECT balance FROM accounts WHERE id = $1"
 
 	var balance float64
@@ -98,7 +98,7 @@ func (r accountRepository) CreateAccount(ctx context.Context, account entities.A
 }
 
 func (r accountRepository) UpdateAccount(ctx context.Context, account entities.Account) error {
-	const query = `UPDATE accounts SET balance=$2, WHERE id=$1`
+	const query = `UPDATE accounts SET balance=$2 WHERE id=$1`
 	_, err := r.Exec(ctx, query, account.ID, account.Balance)
 	if err != nil {
 		return err
