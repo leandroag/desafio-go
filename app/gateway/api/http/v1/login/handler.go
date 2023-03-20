@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
-
+	"github.com/go-chi/chi"
 	"github.com/leandroag/desafio/app/domain/entities"
 )
 
@@ -24,8 +23,8 @@ func NewLoginHandler(loginUseCase loginService) *LoginHandler {
 	}
 }
 
-func (handler *LoginHandler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/login", handler.login).Methods(http.MethodPost)
+func (handler *LoginHandler) RegisterRoutes(router *chi.Mux) {
+	router.Post("/login", handler.login)
 }
 
 func (handler *LoginHandler) login(w http.ResponseWriter, r *http.Request) {

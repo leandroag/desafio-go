@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
-
+	"github.com/go-chi/chi"
 	"github.com/leandroag/desafio/app/domain/entities"
 	"github.com/leandroag/desafio/app/dtos"
 )
@@ -32,9 +31,9 @@ func NewTransferHandler(transferUseCase transferService, cryptService cryptServi
 	}
 }
 
-func (handler TransferHandler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/transfers", handler.getTransfers).Methods(http.MethodGet)
-	router.HandleFunc("/transfers", handler.createTransfer).Methods(http.MethodPost)
+func (handler TransferHandler) RegisterRoutes(router *chi.Mux) {
+	router.Get("/transfers", handler.getTransfers)
+	router.Post("/transfers", handler.createTransfer)
 }
 
 // Handler para a rota GET /transfers

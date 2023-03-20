@@ -13,7 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"github.com/leandroag/desafio/app"
 	"golang.org/x/sync/errgroup"
 
@@ -58,7 +58,7 @@ func main() {
 	loginHandler := handlerLogin.NewLoginHandler(loginUseCase)
 
 	// cria o roteador
-	router := mux.NewRouter()
+	router := chi.NewRouter()
 
 	// registra as rotas do handler de contas
 	accountHandler.RegisterRoutes(router)

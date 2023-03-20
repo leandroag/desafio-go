@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 
 	"github.com/leandroag/desafio/app/domain/entities"
 	"github.com/leandroag/desafio/app/dtos"
@@ -28,10 +28,10 @@ func NewAccountHandler(accountUseCase accountService) *AccountHandler {
 	}
 }
 
-func (handler AccountHandler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/accounts", handler.createAccount).Methods(http.MethodPost)
-	router.HandleFunc("/accounts", handler.listAccounts).Methods(http.MethodGet)
-	router.HandleFunc("/accounts/{account_id}/balance", handler.getAccountBalance).Methods(http.MethodGet)
+func (handler AccountHandler) RegisterRoutes(router *chi.Mux) {
+	router.Post("/accounts", handler.createAccount)
+	router.Get("/accounts", handler.listAccounts)
+	router.Get("/accounts/{account_id}/balance", handler.getAccountBalance)
 }
 
 func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
@@ -63,9 +63,10 @@ func (handler *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Reque
 }
 
 func (handler *AccountHandler) getAccountBalance(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	accountIDString := chi.URLParam(r, "account_id")
 
-	accountID, err := strconv.ParseInt(vars["account_id"], 10, 32)
+	accountID, err := strconv.ParseInt(accountIDString, 10, 32)
+
 	if err != nil {
 		http.Error(w, "Invalid account ID", http.StatusBadRequest)
 		return
