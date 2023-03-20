@@ -1,3 +1,1 @@
-BEGIN;
-DROP TABLE accounts
-COMMIT;
+DROP TABLE IF EXISTS accounts;
