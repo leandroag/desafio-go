@@ -13,7 +13,7 @@ import (
 )
 
 type accountService interface {
-	CreateAccount(ctx context.Context, account dtos.AccountDTO) error
+	CreateAccount(ctx context.Context, account dtos.CreateAccountDTO) error
 	GetAccountBalance(ctx context.Context, accountID int32) (float64, error)
 	GetAccounts(ctx context.Context) ([]entities.Account, error)
 }
@@ -35,7 +35,7 @@ func (handler AccountHandler) RegisterRoutes(router *mux.Router) {
 }
 
 func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
-	var account dtos.AccountDTO
+	var account dtos.CreateAccountDTO
 
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {

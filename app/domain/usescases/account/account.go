@@ -37,7 +37,7 @@ func (s accountService) GetAccountBalance(ctx context.Context, accountID int32) 
 	return s.accountRepository.GetAccountBalance(ctx, accountID)
 }
 
-func (s accountService) CreateAccount(ctx context.Context, account dtos.AccountDTO) error {
+func (s accountService) CreateAccount(ctx context.Context, account dtos.CreateAccountDTO) error {
 	passwordHash, err := s.cryptService.HashSecret(account.Secret)
 	if err != nil {
 		return err
