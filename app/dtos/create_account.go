@@ -9,7 +9,7 @@ type CreateAccountDTO struct {
 	Balance float64 `json:"balance"`
 }
 
-func (dto *CreateAccountDTO) ToAccountDomain() *entities.Account {
+func (dto *CreateAccountDTO) ToCreateAccountDomain() *entities.Account {
 	return &entities.Account{
 		Name:    dto.Name,
 		CPF:     dto.CPF,
