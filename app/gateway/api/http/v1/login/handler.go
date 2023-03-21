@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/leandroag/desafio/app/domain/entities"
+	"github.com/leandroag/desafio/app/dtos"
 )
 
 type loginService interface {
-	Authenticate(ctx context.Context, cpf string, secret string) (string, error)
+	Authenticate(ctx context.Context, Login dtos.LoginDTO) (string, error)
 }
 
 type LoginHandler struct {
@@ -23,19 +23,19 @@ func NewLoginHandler(loginUseCase loginService) *LoginHandler {
 	}
 }
 
-func (handler *LoginHandler) RegisterRoutes(router *chi.Mux) {
-	router.Post("/login", handler.login)
+func (h *LoginHandler) RegisterRoutes(router *chi.Mux) {
+	router.Post("/login", h.login)
 }
 
-func (handler *LoginHandler) login(w http.ResponseWriter, r *http.Request) {
-	var login entities.Login
+func (h *LoginHandler) login(w http.ResponseWriter, r *http.Request) {
+	var login dtos.LoginDTO
 
 	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	token, err := handler.loginUseCase.Authenticate(r.Context(), login.CPF, login.Secret)
+	token, err := h.loginUseCase.Authenticate(r.Context(), login)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return

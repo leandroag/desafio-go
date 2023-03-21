@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/leandroag/desafio/app/domain/entities"
+	"github.com/leandroag/desafio/app/dtos"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -27,13 +28,13 @@ func NewLoginService(accountRepository accountRepository, cryptService cryptServ
 	}
 }
 
-func (service loginService) Authenticate(ctx context.Context, cpf string, secret string) (string, error) {
-	account, err := service.accountRepository.GetAccountByCPF(ctx, cpf)
+func (service loginService) Authenticate(ctx context.Context, login dtos.LoginDTO) (string, error) {
+	account, err := service.accountRepository.GetAccountByCPF(ctx, login.CPF)
 	if err != nil {
 		return "", err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(account.Secret), []byte(secret))
+	err = bcrypt.CompareHashAndPassword([]byte(account.Secret), []byte(login.Secret))
 	if err != nil {
 		// a senha fornecida é inválida, fazer tratamento para retornar erro
 	}
