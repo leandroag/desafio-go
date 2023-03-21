@@ -37,9 +37,9 @@ func NewTransferService(accountRepository accountRepository, transferRepository 
 	}
 }
 
-func (service transferService) CreateTransfer(ctx context.Context, token string, transfer dtos.TransferDTO) error {
+func (s transferService) CreateTransfer(ctx context.Context, token string, transfer dtos.TransferDTO) error {
 	// Busca informações da conta a partir do token do usuário autenticado atualmente
-	accountOriginID, err := service.cryptService.GetAccountByToken(token)
+	accountOriginID, err := s.cryptService.GetAccountByToken(token)
 	if err != nil {
 		return err
 	}
@@ -48,12 +48,12 @@ func (service transferService) CreateTransfer(ctx context.Context, token string,
 		return errors.New("conta de origem inválida")
 	}
 
-	accountOrigin, err := service.accountRepository.GetAccountByID(ctx, accountOriginID)
+	accountOrigin, err := s.accountRepository.GetAccountByID(ctx, accountOriginID)
 	if err != nil {
 		return err
 	}
 
-	accountDestination, err := service.accountRepository.GetAccountByID(ctx, transfer.AccountDestinationID)
+	accountDestination, err := s.accountRepository.GetAccountByID(ctx, transfer.AccountDestinationID)
 	if err != nil {
 		return err
 	}
@@ -66,20 +66,38 @@ func (service transferService) CreateTransfer(ctx context.Context, token string,
 	accountDestination.Balance += transfer.Amount
 
 	// Atualiza o balanço da conta de origem
-	if err := service.accountRepository.UpdateAccount(ctx, accountOrigin); err != nil {
+	if err := s.accountRepository.UpdateAccount(ctx, accountOrigin); err != nil {
 		return err
 	}
 
 	// Atualiza o balanço da conta de destino
-	if err := service.accountRepository.UpdateAccount(ctx, accountDestination); err != nil {
+	if err := s.accountRepository.UpdateAccount(ctx, accountDestination); err != nil {
 		return err
 	}
 
 	transferToSave := transfer.ToTransferDomain()
 
-	return service.transferRepository.CreateTransfer(ctx, *transferToSave)
+	return s.transferRepository.CreateTransfer(ctx, *transferToSave)
 }
 
-func (service transferService) GetTransfersByAccountID(ctx context.Context, accountID int32) ([]entities.Transfer, error) {
-	return service.transferRepository.GetTransfersByAccountID(ctx, accountID)
+func (s transferService) GetTransfersByAccountID(ctx context.Context, accountID int32) ([]dtos.TransferDTO, error) {
+	transfersByAccount, err := s.transferRepository.GetTransfersByAccountID(ctx, accountID)
+
+	if err != nil {
+		return []dtos.TransferDTO{}, err
+	}
+
+	var transfersList []dtos.TransferDTO
+
+	for _, transfer := range transfersByAccount {
+		transferDTO := dtos.TransferDTO{
+			AccountOriginID:      transfer.AccountOriginID,
+			AccountDestinationID: transfer.AccountDestinationID,
+			Amount:               transfer.Amount,
+		}
+
+		transfersList = append(transfersList, transferDTO)
+	}
+
+	return transfersList, nil
 }
