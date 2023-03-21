@@ -29,8 +29,26 @@ func NewAccountService(accountRepository accountRepository, cryptService cryptSe
 	}
 }
 
-func (s accountService) GetAccounts(ctx context.Context) ([]entities.Account, error) {
-	return s.accountRepository.GetAllAccounts(ctx)
+func (s accountService) GetAccounts(ctx context.Context) ([]dtos.ListAccountDTO, error) {
+	allAccounts, err := s.accountRepository.GetAllAccounts(ctx)
+
+	if err != nil {
+		return []dtos.ListAccountDTO{}, err
+	}
+
+	var accountsList []dtos.ListAccountDTO
+
+	for _, account := range allAccounts {
+		accountDTO := dtos.ListAccountDTO{
+			Name:    account.Name,
+			CPF:     account.CPF,
+			Balance: account.Balance,
+		}
+
+		accountsList = append(accountsList, accountDTO)
+	}
+
+	return accountsList, nil
 }
 
 func (s accountService) GetAccountBalance(ctx context.Context, accountID int32) (float64, error) {
@@ -45,7 +63,7 @@ func (s accountService) CreateAccount(ctx context.Context, account dtos.CreateAc
 
 	account.Secret = passwordHash
 
-	accountToSave := account.ToAccountDomain()
+	accountToSave := account.ToCreateAccountDomain()
 
 	return s.accountRepository.CreateAccount(ctx, *accountToSave)
 }
