@@ -31,8 +31,9 @@ func (r transferRepository) CreateTransfer(ctx context.Context, transfer entitie
 	return nil
 }
 
-func (r transferRepository) GetTransfersByAccountID(ctx context.Context, accountID string) ([]entities.Transfer, error) {
-	const query = "SELECT id, account_origin_id, account_destination_id, amount, created_at FROM accounts WHERE account_origin_id = $1"
+func (r transferRepository) GetTransfersByAccountID(ctx context.Context, accountID int32) ([]entities.Transfer, error) {
+	const query = "SELECT id, account_origin_id, account_destination_id, amount, created_at FROM transfers WHERE account_origin_id = $1"
+
 	rows, err := r.Query(ctx, query, accountID)
 	if err != nil {
 		return nil, err

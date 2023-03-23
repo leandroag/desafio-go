@@ -4,16 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 
-	"github.com/leandroag/desafio/app/domain/entities"
+	"github.com/leandroag/desafio/app/dtos"
 )
 
 type accountService interface {
-	CreateAccount(ctx context.Context, account entities.Account) error
-	GetAccountBalance(ctx context.Context, accountID string) (float64, error)
-	GetAccounts(ctx context.Context) ([]entities.Account, error)
+	CreateAccount(ctx context.Context, account dtos.CreateAccountDTO) error
+	GetAccountBalance(ctx context.Context, accountID int32) (float64, error)
+	GetAccounts(ctx context.Context) ([]dtos.ListAccountDTO, error)
 }
 
 type AccountHandler struct {
@@ -26,14 +27,14 @@ func NewAccountHandler(accountUseCase accountService) *AccountHandler {
 	}
 }
 
-func (handler AccountHandler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/accounts", handler.createAccount).Methods(http.MethodPost)
-	router.HandleFunc("/accounts", handler.listAccounts).Methods(http.MethodGet)
-	router.HandleFunc("/accounts/{account_id}/balance", handler.getAccountBalance).Methods(http.MethodGet)
+func (h AccountHandler) RegisterRoutes(router *chi.Mux) {
+	router.Post("/accounts", h.createAccount)
+	router.Get("/accounts", h.listAccounts)
+	router.Get("/accounts/{account_id}/balance", h.getAccountBalance)
 }
 
-func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
-	var account entities.Account
+func (h AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
+	var account dtos.CreateAccountDTO
 
 	err := json.NewDecoder(r.Body).Decode(&account)
 	if err != nil {
@@ -41,7 +42,7 @@ func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = handler.accountUseCase.CreateAccount(r.Context(), account)
+	err = h.accountUseCase.CreateAccount(r.Context(), account)
 	if err != nil {
 		http.Error(w, "Error creating account", http.StatusInternalServerError)
 		return
@@ -50,8 +51,8 @@ func (handler AccountHandler) createAccount(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (handler *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Request) {
-	accounts, err := handler.accountUseCase.GetAccounts(r.Context())
+func (h *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Request) {
+	accounts, err := h.accountUseCase.GetAccounts(r.Context())
 	if err != nil {
 		http.Error(w, "Error getting accounts", http.StatusInternalServerError)
 		return
@@ -60,11 +61,17 @@ func (handler *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(accounts)
 }
 
-func (handler *AccountHandler) getAccountBalance(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountID := vars["account_id"]
+func (h *AccountHandler) getAccountBalance(w http.ResponseWriter, r *http.Request) {
+	accountIDString := chi.URLParam(r, "account_id")
 
-	balance, err := handler.accountUseCase.GetAccountBalance(r.Context(), accountID)
+	accountID, err := strconv.ParseInt(accountIDString, 10, 32)
+
+	if err != nil {
+		http.Error(w, "Invalid account ID", http.StatusBadRequest)
+		return
+	}
+
+	balance, err := h.accountUseCase.GetAccountBalance(r.Context(), int32(accountID))
 	if err != nil {
 		http.Error(w, "Error getting account balance", http.StatusInternalServerError)
 		return

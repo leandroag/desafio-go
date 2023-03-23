@@ -13,17 +13,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"github.com/leandroag/desafio/app"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/leandroag/desafio/app/domain/usescases/account"
-	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 	"github.com/leandroag/desafio/app/domain/usescases/login"
+	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 
 	handlerAccount "github.com/leandroag/desafio/app/gateway/api/http/v1/account"
-	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
 	handlerLogin "github.com/leandroag/desafio/app/gateway/api/http/v1/login"
+	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
 
 	"github.com/leandroag/desafio/app/gateway/bcrypt"
 	"github.com/leandroag/desafio/app/gateway/db/postgres"
@@ -58,7 +58,7 @@ func main() {
 	loginHandler := handlerLogin.NewLoginHandler(loginUseCase)
 
 	// cria o roteador
-	router := mux.NewRouter()
+	router := chi.NewRouter()
 
 	// registra as rotas do handler de contas
 	accountHandler.RegisterRoutes(router)
