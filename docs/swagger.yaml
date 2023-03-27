@@ -1,0 +1,75 @@
+definitions:
+  dtos.CreateAccountDTO:
+    properties:
+      balance:
+        type: number
+      cpf:
+        type: string
+      name:
+        type: string
+      secret:
+        type: string
+    type: object
+  dtos.ListAccountDTO:
+    properties:
+      balance:
+        type: number
+      cpf:
+        type: string
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/http/v1/account:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of accounts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dtos.ListAccountDTO'
+            type: array
+        "500":
+          description: Error getting accounts
+          schema:
+            type: string
+      summary: List accounts
+      tags:
+      - Account
+    post:
+      consumes:
+      - application/json
+      description: Creates a new account.
+      parameters:
+      - description: Account object
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateAccountDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Account created successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Error creating account
+          schema:
+            type: string
+      summary: Create account
+      tags:
+      - Account
+swagger: "2.0"
