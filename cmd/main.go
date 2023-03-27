@@ -21,9 +21,9 @@ import (
 	"github.com/leandroag/desafio/app/domain/usescases/login"
 	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 
+	v1 "github.com/leandroag/desafio/app/gateway/api/http/v1"
 	handlerAccount "github.com/leandroag/desafio/app/gateway/api/http/v1/account"
 	handlerLogin "github.com/leandroag/desafio/app/gateway/api/http/v1/login"
-	handlerSwagger "github.com/leandroag/desafio/app/gateway/api/http/v1/swagger"
 	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
 
 	"github.com/leandroag/desafio/app/gateway/bcrypt"
@@ -63,16 +63,11 @@ func main() {
 	accountHandler := handlerAccount.NewAccountHandler(accountUseCase)
 	transferHandler := handlerTransfer.NewTransferHandler(transferUseCase, bcryptService)
 	loginHandler := handlerLogin.NewLoginHandler(loginUseCase)
-	swaggerHandler := handlerSwagger.NewSwaggerHandler()
 
 	// cria o roteador
 	router := chi.NewRouter()
 
-	// registra as rotas do handler de contas
-	accountHandler.RegisterRoutes(router)
-	transferHandler.RegisterRoutes(router)
-	loginHandler.RegisterRoutes(router)
-	swaggerHandler.RegisterRoutes(router)
+	v1.Setup(router, accountHandler, transferHandler, loginHandler)
 
 	// Server
 	fmt.Printf(cfg.Http.Address)
