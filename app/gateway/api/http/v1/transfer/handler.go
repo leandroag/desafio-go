@@ -35,7 +35,16 @@ func (h TransferHandler) RegisterRoutes(router *chi.Mux) {
 	router.Post("/transfers", h.createTransfer)
 }
 
-// Handler para a rota GET /transfers
+// getTransfers retrieves a list of transfers made by the authenticated account
+// @Summary Retrieves a list of transfers
+// @Description Retrieves a list of transfers made by the authenticated account
+// @Tags transfers
+// @Security BearerAuth
+// @Success 200 {array} dtos.TransferDTO
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Router /api/http/v1/transfers [get]
 func (h TransferHandler) getTransfers(w http.ResponseWriter, r *http.Request) {
 	// Recupera o valor do cabeçalho "Authorization" da requisição
 	token := r.Header.Get("Authorization")

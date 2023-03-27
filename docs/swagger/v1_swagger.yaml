@@ -1,5 +1,5 @@
 definitions:
-  dtos.CreateAccountDTO:
+  github_com_leandroag_desafio_app_dtos.CreateAccountDTO:
     properties:
       balance:
         type: number
@@ -10,7 +10,7 @@ definitions:
       secret:
         type: string
     type: object
-  dtos.ListAccountDTO:
+  github_com_leandroag_desafio_app_dtos.ListAccountDTO:
     properties:
       balance:
         type: number
@@ -19,8 +19,22 @@ definitions:
       name:
         type: string
     type: object
+  github_com_leandroag_desafio_app_dtos.TransferDTO:
+    properties:
+      account_destination_id:
+        type: integer
+      account_origin_id:
+        type: integer
+      amount:
+        type: number
+    type: object
 info:
   contact: {}
+  description: Credit Card Billing REST API.
+  license:
+    name: Stone Co®
+  title: Credit Card Billing
+  version: 0.0.1
 paths:
   /api/http/v1/account:
     get:
@@ -34,7 +48,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dtos.ListAccountDTO'
+              $ref: '#/definitions/github_com_leandroag_desafio_app_dtos.ListAccountDTO'
             type: array
         "500":
           description: Error getting accounts
@@ -53,7 +67,7 @@ paths:
         name: account
         required: true
         schema:
-          $ref: '#/definitions/dtos.CreateAccountDTO'
+          $ref: '#/definitions/github_com_leandroag_desafio_app_dtos.CreateAccountDTO'
       produces:
       - application/json
       responses:
@@ -72,4 +86,33 @@ paths:
       summary: Create account
       tags:
       - Account
+  /api/http/v1/transfers:
+    get:
+      description: Retrieves a list of transfers made by the authenticated account
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_leandroag_desafio_app_dtos.TransferDTO'
+            type: array
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Retrieves a list of transfers
+      tags:
+      - transfers
+schemes:
+- https
 swagger: "2.0"

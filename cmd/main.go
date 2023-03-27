@@ -23,12 +23,19 @@ import (
 
 	handlerAccount "github.com/leandroag/desafio/app/gateway/api/http/v1/account"
 	handlerLogin "github.com/leandroag/desafio/app/gateway/api/http/v1/login"
+	handlerSwagger "github.com/leandroag/desafio/app/gateway/api/http/v1/swagger"
 	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
 
 	"github.com/leandroag/desafio/app/gateway/bcrypt"
 	"github.com/leandroag/desafio/app/gateway/db/postgres"
 )
 
+// API
+// @Title Credit Card Billing
+// @Description Credit Card Billing REST API.
+// @Version 0.0.1
+// @License.name Stone Co®
+// @Schemes https
 func main() {
 	// carrega as configurações
 	cfg := app.ReadConfig(".env")
@@ -56,6 +63,7 @@ func main() {
 	accountHandler := handlerAccount.NewAccountHandler(accountUseCase)
 	transferHandler := handlerTransfer.NewTransferHandler(transferUseCase, bcryptService)
 	loginHandler := handlerLogin.NewLoginHandler(loginUseCase)
+	swaggerHandler := handlerSwagger.NewSwaggerHandler()
 
 	// cria o roteador
 	router := chi.NewRouter()
@@ -64,6 +72,7 @@ func main() {
 	accountHandler.RegisterRoutes(router)
 	transferHandler.RegisterRoutes(router)
 	loginHandler.RegisterRoutes(router)
+	swaggerHandler.RegisterRoutes(router)
 
 	// Server
 	fmt.Printf(cfg.Http.Address)
