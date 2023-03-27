@@ -19,6 +19,13 @@ definitions:
       name:
         type: string
     type: object
+  dtos.LoginDTO:
+    properties:
+      cpf:
+        type: string
+      secret:
+        type: string
+    type: object
   dtos.TransferDTO:
     properties:
       account_destination_id:
@@ -113,6 +120,40 @@ paths:
       summary: Get account balance
       tags:
       - Account
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return an access token.
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Authenticate user
+      tags:
+      - Authentication
   /transfers:
     get:
       description: Retrieves a list of transfers made by the authenticated account.
