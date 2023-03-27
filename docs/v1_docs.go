@@ -16,7 +16,7 @@ const docTemplatev1 = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/http/v1/account": {
+        "/accounts": {
             "get": {
                 "description": "Returns a list of accounts.",
                 "consumes": [
@@ -92,16 +92,60 @@ const docTemplatev1 = `{
                 }
             }
         },
-        "/api/http/v1/transfers": {
+        "/accounts/{account_id}/balance": {
+            "get": {
+                "description": "Returns the balance of an account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Get account balance",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Account ID",
+                        "name": "account_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid account ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error getting account balance",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/transfers": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves a list of transfers made by the authenticated account",
+                "description": "Retrieves a list of transfers made by the authenticated account.",
                 "tags": [
-                    "transfers"
+                    "Transfers"
                 ],
                 "summary": "Retrieves a list of transfers",
                 "responses": {
@@ -128,6 +172,50 @@ const docTemplatev1 = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a transfer between two accounts.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfers"
+                ],
+                "summary": "Create transfer",
+                "parameters": [
+                    {
+                        "description": "Transfer object",
+                        "name": "transfer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.TransferDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Transfer created successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error creating transfer",
                         "schema": {
                             "type": "string"
                         }

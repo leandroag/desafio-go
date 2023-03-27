@@ -37,14 +37,14 @@ func (h TransferHandler) RegisterRoutes(router *chi.Mux) {
 
 // getTransfers retrieves a list of transfers made by the authenticated account
 // @Summary Retrieves a list of transfers
-// @Description Retrieves a list of transfers made by the authenticated account
-// @Tags transfers
+// @Description Retrieves a list of transfers made by the authenticated account.
+// @Tags Transfers
 // @Security BearerAuth
 // @Success 200 {array} dtos.TransferDTO
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal server error"
-// @Router /api/http/v1/transfers [get]
+// @Router /transfers [get]
 func (h TransferHandler) getTransfers(w http.ResponseWriter, r *http.Request) {
 	// Recupera o valor do cabeçalho "Authorization" da requisição
 	token := r.Header.Get("Authorization")
@@ -68,13 +68,23 @@ func (h TransferHandler) getTransfers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(transferList)
 }
 
-// Handler para a rota POST /transfers
+// createTransfer creates a transfer between two accounts.
+// @Summary Create transfer
+// @Description Creates a transfer between two accounts.
+// @Tags Transfers
+// @Accept json
+// @Produce json
+// @Param transfer body dtos.TransferDTO true "Transfer object"
+// @Success 201 {object} string "Transfer created successfully"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Error creating transfer"
+// @Router /transfers [post]
 func (h TransferHandler) createTransfer(w http.ResponseWriter, r *http.Request) {
 	var transfer dtos.TransferDTO
 
 	err := json.NewDecoder(r.Body).Decode(&transfer)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -84,7 +94,7 @@ func (h TransferHandler) createTransfer(w http.ResponseWriter, r *http.Request) 
 	// Realiza a transferência
 	err = h.transferUseCase.CreateTransfer(r.Context(), token, transfer)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error creating transfer", http.StatusInternalServerError)
 		return
 	}
 

@@ -34,7 +34,7 @@ info:
   title: Desafio
   version: 0.0.1
 paths:
-  /api/http/v1/account:
+  /accounts:
     get:
       consumes:
       - application/json
@@ -84,9 +84,38 @@ paths:
       summary: Create account
       tags:
       - Account
-  /api/http/v1/transfers:
+  /accounts/{account_id}/balance:
     get:
-      description: Retrieves a list of transfers made by the authenticated account
+      consumes:
+      - application/json
+      description: Returns the balance of an account.
+      parameters:
+      - description: Account ID
+        in: path
+        name: account_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: number
+        "400":
+          description: Invalid account ID
+          schema:
+            type: string
+        "500":
+          description: Error getting account balance
+          schema:
+            type: string
+      summary: Get account balance
+      tags:
+      - Account
+  /transfers:
+    get:
+      description: Retrieves a list of transfers made by the authenticated account.
       responses:
         "200":
           description: OK
@@ -110,7 +139,36 @@ paths:
       - BearerAuth: []
       summary: Retrieves a list of transfers
       tags:
-      - transfers
+      - Transfers
+    post:
+      consumes:
+      - application/json
+      description: Creates a transfer between two accounts.
+      parameters:
+      - description: Transfer object
+        in: body
+        name: transfer
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.TransferDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Transfer created successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Error creating transfer
+          schema:
+            type: string
+      summary: Create transfer
+      tags:
+      - Transfers
 schemes:
 - https
 swagger: "2.0"
