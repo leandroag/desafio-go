@@ -21,6 +21,7 @@ import (
 	"github.com/leandroag/desafio/app/domain/usescases/login"
 	"github.com/leandroag/desafio/app/domain/usescases/transfer"
 
+	v1 "github.com/leandroag/desafio/app/gateway/api/http/v1"
 	handlerAccount "github.com/leandroag/desafio/app/gateway/api/http/v1/account"
 	handlerLogin "github.com/leandroag/desafio/app/gateway/api/http/v1/login"
 	handlerTransfer "github.com/leandroag/desafio/app/gateway/api/http/v1/transfer"
@@ -29,6 +30,12 @@ import (
 	"github.com/leandroag/desafio/app/gateway/db/postgres"
 )
 
+// API
+// @Title Credit Card Billing
+// @Description Credit Card Billing REST API.
+// @Version 0.0.1
+// @License.name Stone Co®
+// @Schemes https
 func main() {
 	// carrega as configurações
 	cfg := app.ReadConfig(".env")
@@ -60,10 +67,7 @@ func main() {
 	// cria o roteador
 	router := chi.NewRouter()
 
-	// registra as rotas do handler de contas
-	accountHandler.RegisterRoutes(router)
-	transferHandler.RegisterRoutes(router)
-	loginHandler.RegisterRoutes(router)
+	v1.Setup(router, accountHandler, transferHandler, loginHandler)
 
 	// Server
 	fmt.Printf(cfg.Http.Address)

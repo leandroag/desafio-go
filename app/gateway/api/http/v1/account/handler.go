@@ -33,6 +33,17 @@ func (h AccountHandler) RegisterRoutes(router *chi.Mux) {
 	router.Get("/accounts/{account_id}/balance", h.getAccountBalance)
 }
 
+// createAccount creates a new account.
+// @Summary Create account
+// @Description Creates a new account.
+// @Tags Account
+// @Accept json
+// @Produce json
+// @Param account body dtos.CreateAccountDTO true "Account object"
+// @Success 201 {object} string "Account created successfully"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Error creating account"
+// @Router /accounts [post]
 func (h AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
 	var account dtos.CreateAccountDTO
 
@@ -51,6 +62,15 @@ func (h AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// listAccounts returns a list of accounts.
+// @Summary List accounts
+// @Description Returns a list of accounts.
+// @Tags Account
+// @Accept json
+// @Produce json
+// @Success 200 {array} dtos.ListAccountDTO 
+// @Failure 500 {object} string "Error getting accounts"
+// @Router /accounts [get]
 func (h *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Request) {
 	accounts, err := h.accountUseCase.GetAccounts(r.Context())
 	if err != nil {
@@ -61,6 +81,17 @@ func (h *AccountHandler) listAccounts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(accounts)
 }
 
+// getAccountBalance returns the balance of an account.
+// @Summary Get account balance
+// @Description Returns the balance of an account.
+// @Tags Account
+// @Accept json
+// @Produce json
+// @Param account_id path int true "Account ID"
+// @Success 200 {object} float64
+// @Failure 400 {object} string "Invalid account ID"
+// @Failure 500 {object} string "Error getting account balance"
+// @Router /accounts/{account_id}/balance [get]
 func (h *AccountHandler) getAccountBalance(w http.ResponseWriter, r *http.Request) {
 	accountIDString := chi.URLParam(r, "account_id")
 

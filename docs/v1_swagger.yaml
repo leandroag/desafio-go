@@ -1,0 +1,215 @@
+definitions:
+  dtos.CreateAccountDTO:
+    properties:
+      balance:
+        type: number
+      cpf:
+        type: string
+      name:
+        type: string
+      secret:
+        type: string
+    type: object
+  dtos.ListAccountDTO:
+    properties:
+      balance:
+        type: number
+      cpf:
+        type: string
+      name:
+        type: string
+    type: object
+  dtos.LoginDTO:
+    properties:
+      cpf:
+        type: string
+      secret:
+        type: string
+    type: object
+  dtos.TransferDTO:
+    properties:
+      account_destination_id:
+        type: integer
+      account_origin_id:
+        type: integer
+      amount:
+        type: number
+    type: object
+info:
+  contact: {}
+  description: Desafio REST API.
+  title: Desafio
+  version: 0.0.1
+paths:
+  /accounts:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of accounts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dtos.ListAccountDTO'
+            type: array
+        "500":
+          description: Error getting accounts
+          schema:
+            type: string
+      summary: List accounts
+      tags:
+      - Account
+    post:
+      consumes:
+      - application/json
+      description: Creates a new account.
+      parameters:
+      - description: Account object
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateAccountDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Account created successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Error creating account
+          schema:
+            type: string
+      summary: Create account
+      tags:
+      - Account
+  /accounts/{account_id}/balance:
+    get:
+      consumes:
+      - application/json
+      description: Returns the balance of an account.
+      parameters:
+      - description: Account ID
+        in: path
+        name: account_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: number
+        "400":
+          description: Invalid account ID
+          schema:
+            type: string
+        "500":
+          description: Error getting account balance
+          schema:
+            type: string
+      summary: Get account balance
+      tags:
+      - Account
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return an access token.
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Authenticate user
+      tags:
+      - Authentication
+  /transfers:
+    get:
+      description: Retrieves a list of transfers made by the authenticated account.
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dtos.TransferDTO'
+            type: array
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Retrieves a list of transfers
+      tags:
+      - Transfers
+    post:
+      consumes:
+      - application/json
+      description: Creates a transfer between two accounts.
+      parameters:
+      - description: Transfer object
+        in: body
+        name: transfer
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.TransferDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Transfer created successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Error creating transfer
+          schema:
+            type: string
+      summary: Create transfer
+      tags:
+      - Transfers
+schemes:
+- https
+swagger: "2.0"

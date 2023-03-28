@@ -27,6 +27,18 @@ func (h *LoginHandler) RegisterRoutes(router *chi.Mux) {
 	router.Post("/login", h.login)
 }
 
+// login authenticates a user and returns an access token.
+// @Summary Authenticate user
+// @Description Authenticate user and return an access token.
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body dtos.LoginDTO true "User credentials"
+// @Success 200 {string} string "Access token"
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Router /login [post]
 func (h *LoginHandler) login(w http.ResponseWriter, r *http.Request) {
 	var login dtos.LoginDTO
 
